@@ -1,0 +1,522 @@
+openapi: 3.0.0
+info:
+  title: User Management and Promotions API
+  description: API для управления пользователями, акциями, категориями и продуктами.
+  version: "1.0.0"
+servers:
+  - url: https://api.example.com/v1
+    description: Production server
+
+paths:
+  /auth/login:
+    post:
+      summary: Авторизация
+      description: Авторизует пользователя с использованием email и пароля.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: "user@example.com"
+                password:
+                  type: string
+                  format: password
+                  example: "securepassword"
+              required:
+                - email
+                - password
+      responses:
+        '200':
+          description: Успешная авторизация
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  userId:
+                    type: string
+                    example: "12345"
+                  sessionToken:
+                    type: string
+                    example: "abcdef123456"
+        '401':
+          description: Неверный email или пароль
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Invalid credentials"
+
+  /auth/register:
+    post:
+      summary: Регистрация
+      description: Регистрирует нового пользователя с использованием email и пароля.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: "user@example.com"
+                password:
+                  type: string
+                  format: password
+                  example: "securepassword"
+                confirmPassword:
+                  type: string
+                  format: password
+                  example: "securepassword"
+              required:
+                - email
+                - password
+                - confirmPassword
+      responses:
+        '201':
+          description: Успешная регистрация
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  userId:
+                    type: string
+                    example: "12345"
+                  sessionId:
+                    type: string
+                    example: "abcdef123456"
+        '400':
+          description: Ошибка валидации (например, несовпадение паролей)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Passwords do not match"
+
+  /promotions:
+    get:
+      summary: Получение списка акций
+      description: Возвращает список доступных акций. Требуется токен сессии в заголовке `Authorization`.
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Успешное получение списка акций
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      example: "promo123"
+                    name:
+                      type: string
+                      example: "Скидка 50%"
+                    image:
+                      type: string
+                      format: uri
+                      example: "https://example.com/images/promo123.png"
+        '401':
+          description: Ошибка авторизации
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Unauthorized"
+
+  /categories:
+    get:
+      summary: Получение списка категорий
+      description: Возвращает список доступных категорий. Требуется токен сессии в заголовке `Authorization`.
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Успешное получение списка категорий
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      example: "cat123"
+                    name:
+                      type: string
+                      example: "Овощи"
+                    image:
+                      type: string
+                      format: uri
+                      example: "https://example.com/images/category123.png"
+        '401':
+          description: Ошибка авторизации
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Unauthorized"
+
+  /products:
+    get:
+      summary: Получение списка продуктов
+      description: Возвращает список продуктов. Требуется токен сессии в заголовке `Authorization`.
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Успешное получение списка продуктов
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      example: "prod123"
+                    name:
+                      type: string
+                      example: "Персик"
+                    image:
+                      type: string
+                      format: uri
+                      example: "https://example.com/images/product123.png"
+                    price:
+                      type: number
+                      format: float
+                      example: 999.99
+                    discount:
+                      type: number
+                      format: float
+                      example: 10.0
+                    isNew:
+                      type: boolean
+                      example: true
+        '401':
+          description: Ошибка авторизации
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Unauthorized"
+
+  /products/{id}:
+    get:
+      summary: Получение информации о продукте по ID
+      description: Возвращает подробную информацию о продукте. Требуется токен сессии в заголовке `Authorization`.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Уникальный идентификатор продукта
+          schema:
+            type: string
+            example: "prod123"
+      responses:
+        '200':
+          description: Успешное получение информации о продукте
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    example: "prod123"
+                  name:
+                    type: string
+                    example: "Персик"
+                  image:
+                    type: string
+                    format: uri
+                    example: "https://example.com/images/product123.png"
+                  price:
+                    type: number
+                    format: float
+                    example: 999.99
+                  minOrder:
+                    type: string
+                    example: "1 кг"
+                  rating:
+                    type: number
+                    format: float
+                    example: 4.5
+                  reviewsCount:
+                    type: integer
+                    example: 152
+                  description:
+                    type: string
+                    example: "Вкусный персик"
+        '401':
+          description: Ошибка авторизации
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Unauthorized"
+        '404':
+          description: Продукт не найден
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Product not found"
+
+  /users/{id}:
+    get:
+      summary: Получение данных пользователя
+      description: Возвращает информацию о пользователе. Требуется токен сессии в заголовке `Authorization` и ID пользователя в пути.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Уникальный идентификатор пользователя
+          schema:
+            type: string
+            example: "user123"
+      responses:
+        '200':
+          description: Успешное получение данных пользователя
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    example: "user123"
+                  name:
+                    type: string
+                    example: "Иван Иванов"
+                  email:
+                    type: string
+                    example: "ivan@example.com"
+                  image:
+                    type: string
+                    format: uri
+                    example: "https://example.com/images/user123.png"
+        '401':
+          description: Ошибка авторизации
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Unauthorized"
+
+  /users/{id}/update-photo:
+    post:
+      summary: Обновление фотографии пользователя
+      description: Обновляет фотографию пользователя. Требуется токен сессии в заголовке `Authorization` и файл в формате multipart/form-data.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Уникальный идентификатор пользователя
+          schema:
+            type: string
+            example: "user123"
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Успешное обновление фотографии
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Фотография обновлена успешно"
+        '401':
+          description: Ошибка авторизации
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Unauthorized"
+
+  /users/{id}/update:
+    post:
+      summary: Обновление данных пользователя
+      description: Обновляет имя, email и телефон пользователя. Требуется токен сессии.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Уникальный идентификатор пользователя
+          schema:
+            type: string
+            example: "user123"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: "Иван Иванов"
+                email:
+                  type: string
+                  example: "ivan@example.com"
+                phone:
+                  type: string
+                  example: "+79991112233"
+              required:
+                - name
+                - email
+      responses:
+        '200':
+          description: Успешное обновление данных
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Данные пользователя обновлены успешно"
+        '401':
+          description: Ошибка авторизации
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Unauthorized"
+
+  /users/{id}/update-password:
+    post:
+      summary: Обновление пароля пользователя
+      description: Обновляет пароль пользователя. Требуется токен сессии.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Уникальный идентификатор пользователя
+          schema:
+            type: string
+            example: "user123"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                oldPassword:
+                  type: string
+                  format: password
+                  example: "oldpassword123"
+                newPassword:
+                  type: string
+                  format: password
+                  example: "newpassword123"
+                confirmPassword:
+                  type: string
+                  format: password
+                  example: "newpassword123"
+              required:
+                - oldPassword
+                - newPassword
+                - confirmPassword
+      responses:
+        '200':
+          description: Успешное обновление пароля
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Пароль обновлен успешно"
+        '401':
+          description: Ошибка авторизации
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Unauthorized"
+        '400':
+          description: Ошибка валидации
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Новый пароль не совпадает с подтверждением"
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer

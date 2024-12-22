@@ -1,0 +1,366 @@
+openapi: 3.0.0
+info:
+  title: Unified API for New Design
+  description: API для управления категориями, акциями, вещами и пользователями в новом дизайне.
+  version: "1.0.0"
+servers:
+  - url: https://api.newdesign.com/v1
+    description: Production server
+
+paths:
+  /auth/login:
+    post:
+      summary: Авторизация
+      description: Авторизует пользователя с использованием `username` или `email` и пароля.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  example: "john_doe"
+                  description: Имя пользователя (необязательное, если передан email)
+                email:
+                  type: string
+                  format: email
+                  example: "john.doe@example.com"
+                  description: Email пользователя (необязательное, если передан username)
+                password:
+                  type: string
+                  format: password
+                  example: "securepassword"
+              required:
+                - password
+      responses:
+        '200':
+          description: Успешная авторизация
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sessionId:
+                    type: string
+                    example: "abcdef123456"
+                  userId:
+                    type: string
+                    example: "12345"
+        '400':
+          description: Неверные данные авторизации
+
+  /auth/register:
+    post:
+      summary: Регистрация
+      description: Регистрирует нового пользователя с использованием `username` или `email` и пароля.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  example: "john_doe"
+                email:
+                  type: string
+                  format: email
+                  example: "john.doe@example.com"
+                password:
+                  type: string
+                  format: password
+                  example: "securepassword"
+                confirmPassword:
+                  type: string
+                  format: password
+                  example: "securepassword"
+              required:
+                - password
+                - confirmPassword
+      responses:
+        '201':
+          description: Успешная регистрация
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sessionId:
+                    type: string
+                    example: "abcdef123456"
+                  userId:
+                    type: string
+                    example: "12345"
+        '400':
+          description: Ошибка валидации
+
+  /categories:
+    get:
+      summary: Получение списка категорий
+      description: Возвращает массив категорий. Требуется токен сессии.
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Успешное получение списка категорий
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                      example: "Обувь"
+                    image:
+                      type: string
+                      format: uri
+                      example: "https://example.com/images/category123.png"
+
+  /promotions:
+    get:
+      summary: Получение списка акций
+      description: Возвращает массив акций. Требуется токен сессии.
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Успешное получение списка акций
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                      example: "Скидка 50%"
+                    image:
+                      type: string
+                      format: uri
+                      example: "https://example.com/images/promo123.png"
+
+  /items:
+    get:
+      summary: Получение всех вещей
+      description: Возвращает массив вещей и общее количество элементов. Требуется токен сессии.
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Успешное получение вещей
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  totalItems:
+                    type: integer
+                    example: 150
+                  items:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                          example: "Рубашка"
+                        image:
+                          type: string
+                          format: uri
+                          example: "https://example.com/images/item123.png"
+                        description:
+                          type: string
+                          example: "Качественная рубашка из хлопка"
+                        price:
+                          type: number
+                          format: float
+                          example: 1200.50
+                        rating:
+                          type: number
+                          format: float
+                          example: 4.5
+                        reviewsCount:
+                          type: integer
+                          example: 200
+
+  /items/{id}:
+    get:
+      summary: Получение информации о вещи по ID
+      description: Возвращает подробную информацию о вещи. Требуется токен сессии.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            example: "item123"
+      responses:
+        '200':
+          description: Успешное получение информации о вещи
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  images:
+                    type: array
+                    items:
+                      type: string
+                      format: uri
+                      example: "https://example.com/images/item123-1.png"
+                  availableSizes:
+                    type: array
+                    items:
+                      type: string
+                      example: ["S", "M", "L"]
+                  name:
+                    type: string
+                    example: "Рубашка"
+                  rating:
+                    type: number
+                    format: float
+                    example: 4.5
+                  reviewsCount:
+                    type: integer
+                    example: 200
+                  price:
+                    type: number
+                    format: float
+                    example: 1200.50
+                  discount:
+                    type: string
+                    example: "10%"
+                  discountedPrice:
+                    type: number
+                    example: 1080.45
+                  description:
+                    type: string
+                    example: "Качественная рубашка из хлопка"
+                  tags:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                          example: "Новинка"
+                        image:
+                          type: string
+                          format: uri
+                          example: "https://example.com/images/tag123.png"
+
+  /users/{id}:
+    get:
+      summary: Получение информации о пользователе
+      description: Возвращает информацию о пользователе. Требуется токен сессии.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            example: "user123"
+      responses:
+        '200':
+          description: Успешное получение информации о пользователе
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  image:
+                    type: string
+                    format: uri
+                    example: "https://example.com/images/user123.png"
+                  email:
+                    type: string
+                    example: "johndoe@example.com"
+                  address:
+                    type: string
+                    example: "123 Main Street"
+                  city:
+                    type: string
+                    example: "New York"
+                  state:
+                    type: string
+                    example: "NY"
+                  country:
+                    type: string
+                    example: "USA"
+                  bankAccountNumber:
+                    type: string
+                    example: "123456789"
+                  accountHolderName:
+                    type: string
+                    example: "John Doe"
+                  ifscCode:
+                    type: string
+                    example: "IFSC0001234"
+
+    post:
+      summary: Обновление информации о пользователе
+      description: Обновляет информацию о пользователе. Требуется токен сессии.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                image:
+                  type: string
+                  format: uri
+                  example: "https://example.com/images/user123.png"
+                email:
+                  type: string
+                  example: "johndoe@example.com"
+                address:
+                  type: string
+                  example: "123 Main Street"
+                city:
+                  type: string
+                  example: "New York"
+                state:
+                  type: string
+                  example: "NY"
+                country:
+                  type: string
+                  example: "USA"
+                bankAccountNumber:
+                  type: string
+                  example: "123456789"
+                accountHolderName:
+                  type: string
+                  example: "John Doe"
+                ifscCode:
+                  type: string
+                  example: "IFSC0001234"
+      responses:
+        '200':
+          description: Успешное обновление данных пользователя
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Информация пользователя успешно обновлена"
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer

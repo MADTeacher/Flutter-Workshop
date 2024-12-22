@@ -1,0 +1,471 @@
+openapi: 3.0.0
+info:
+  title: Comprehensive API
+  description: API для управления пользователями, ресторанами, категориями и авторизацией.
+  version: "1.0.0"
+servers:
+  - url: https://api.example.com/v1
+    description: Production server
+
+paths:
+  /auth/login:
+    post:
+      summary: Авторизация
+      description: Авторизует пользователя с использованием email и пароля.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: "user@example.com"
+                password:
+                  type: string
+                  format: password
+                  example: "securepassword"
+              required:
+                - email
+                - password
+      responses:
+        '200':
+          description: Успешная авторизация
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  userId:
+                    type: string
+                    example: "12345"
+                  fullname:
+                    type: string
+                    example: "John Doe"
+                  sessionToken:
+                    type: string
+                    example: "abcdef123456"
+        '401':
+          description: Неверный email или пароль
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Invalid credentials"
+
+  /auth/register:
+    post:
+      summary: Регистрация
+      description: Регистрирует нового пользователя с использованием имени, email и пароля.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                fullname:
+                  type: string
+                  example: "John Doe"
+                email:
+                  type: string
+                  format: email
+                  example: "user@example.com"
+                password:
+                  type: string
+                  format: password
+                  example: "securepassword"
+                confirmPassword:
+                  type: string
+                  format: password
+                  example: "securepassword"
+              required:
+                - fullname
+                - email
+                - password
+                - confirmPassword
+      responses:
+        '201':
+          description: Успешная регистрация
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  userId:
+                    type: string
+                    example: "12345"
+                  fullname:
+                    type: string
+                    example: "John Doe"
+                  sessionToken:
+                    type: string
+                    example: "abcdef123456"
+        '400':
+          description: Ошибка валидации
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Passwords do not match"
+
+  /categories:
+    get:
+      summary: Получение списка категорий
+      description: Возвращает список категорий. Требуется токен сессии в заголовке `Authorization`.
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Успешное получение списка категорий
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      example: "cat123"
+                    name:
+                      type: string
+                      example: "Итальянская кухня"
+                    image:
+                      type: string
+                      format: uri
+                      example: "https://example.com/images/category123.png"
+        '401':
+          description: Ошибка авторизации
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Unauthorized"
+
+  /restaurants:
+    get:
+      summary: Получение списка ресторанов
+      description: Возвращает список ресторанов. Требуется токен сессии в заголовке `Authorization`.
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Успешное получение списка ресторанов
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      example: "rest123"
+                    name:
+                      type: string
+                      example: "Пицца Хаус"
+                    categories:
+                      type: array
+                      items:
+                        type: string
+                      example: ["Итальянская кухня", "Пицца"]
+                    rating:
+                      type: number
+                      format: float
+                      example: 4.5
+                    deliveryCost:
+                      type: number
+                      format: float
+                      example: 100
+                    deliveryTime:
+                      type: string
+                      example: "30-40 минут"
+                    image:
+                      type: string
+                      format: uri
+                      example: "https://example.com/images/restaurant123.png"
+        '401':
+          description: Ошибка авторизации
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Unauthorized"
+
+  /restaurants/{id}:
+    get:
+      summary: Получение информации о ресторане по ID
+      description: Возвращает подробную информацию о ресторане. Требуется токен сессии в заголовке `Authorization`.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Уникальный идентификатор ресторана
+          schema:
+            type: string
+            example: "rest123"
+      responses:
+        '200':
+          description: Успешное получение информации о ресторане
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    example: "rest123"
+                  name:
+                    type: string
+                    example: "Пицца Хаус"
+                  description:
+                    type: string
+                    example: "Лучший ресторан итальянской кухни в городе."
+                  image:
+                    type: string
+                    format: uri
+                    example: "https://example.com/images/restaurant123.png"
+                  rating:
+                    type: number
+                    format: float
+                    example: 4.5
+                  deliveryCost:
+                    type: number
+                    format: float
+                    example: 100
+                  deliveryTime:
+                    type: string
+                    example: "30-40 минут"
+                  categories:
+                    type: array
+                    items:
+                      type: string
+                    example: ["Итальянская кухня", "Пицца"]
+        '401':
+          description: Ошибка авторизации
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Unauthorized"
+        '404':
+          description: Ресторан не найден
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Restaurant not found"
+
+  /dishes:
+    get:
+      summary: Получение блюд по категории
+      description: Возвращает список блюд по названию категории. Требуется токен сессии в заголовке `Authorization`.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: category
+          in: query
+          required: true
+          description: Название категории
+          schema:
+            type: string
+            example: "Пицца"
+      responses:
+        '200':
+          description: Успешное получение списка блюд
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      example: "dish123"
+                    name:
+                      type: string
+                      example: "Маргарита"
+                    image:
+                      type: string
+                      format: uri
+                      example: "https://example.com/images/dish123.png"
+                    restaurant:
+                      type: string
+                      example: "Пицца Хаус"
+                    price:
+                      type: number
+                      format: float
+                      example: 450.00
+        '401':
+          description: Ошибка авторизации
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Unauthorized"
+        '404':
+          description: Блюда не найдены
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Dishes not found for the category"
+
+  /users/{id}:
+    get:
+      summary: Получение информации о пользователе
+      description: Возвращает информацию о пользователе. Требуется токен сессии в заголовке `Authorization`.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Уникальный идентификатор пользователя
+          schema:
+            type: string
+            example: "user123"
+      responses:
+        '200':
+          description: Успешное получение информации о пользователе
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    example: "user123"
+                  fullname:
+                    type: string
+                    example: "John Doe"
+                  bio:
+                    type: string
+                    example: "Люблю готовить и путешествовать."
+                  email:
+                    type: string
+                    example: "johndoe@example.com"
+                  phoneNumber:
+                    type: string
+                    example: "+1234567890"
+                  image:
+                    type: string
+                    format: uri
+                    example: "https://example.com/images/user123.png"
+        '401':
+          description: Ошибка авторизации
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Unauthorized"
+        '404':
+          description: Пользователь не найден
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "User not found"
+
+    post:
+      summary: Обновление информации о пользователе
+      description: Обновляет данные пользователя. Требуется токен сессии в заголовке `Authorization`.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                image:
+                  type: string
+                  format: binary
+                  description: Фотография пользователя
+                fullname:
+                  type: string
+                  example: "John Doe"
+                email:
+                  type: string
+                  format: email
+                  example: "johndoe@example.com"
+                phoneNumber:
+                  type: string
+                  example: "+1234567890"
+                bio:
+                  type: string
+                  example: "Люблю готовить и путешествовать."
+      responses:
+        '200':
+          description: Успешное обновление информации о пользователе
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Информация пользователя успешно обновлена"
+        '400':
+          description: Ошибка валидации данных
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Некорректный email"
+        '401':
+          description: Ошибка авторизации
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Unauthorized"
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
