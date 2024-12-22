@@ -1,0 +1,345 @@
+openapi: 3.0.3
+info:
+  title: Dart Server API
+  description: API for user management, cars, and promotions.
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080
+paths:
+  /register:
+    post:
+      summary: Register a new user.
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                fullName:
+                  type: string
+                  example: John Doe
+                email:
+                  type: string
+                  example: john.doe@example.com
+                password:
+                  type: string
+                  example: secretpassword
+                confirmPassword:
+                  type: string
+                  example: secretpassword
+              required:
+                - fullName
+                - email
+                - password
+                - confirmPassword
+      responses:
+        "200":
+          description: User registered successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  userId:
+                    type: integer
+                  sessionId:
+                    type: string
+        "400":
+          description: Bad request.
+  /login:
+    post:
+      summary: Log in a user.
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: john.doe@example.com
+                password:
+                  type: string
+                  example: secretpassword
+              required:
+                - email
+                - password
+      responses:
+        "200":
+          description: User logged in successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  userId:
+                    type: integer
+                  fullName:
+                    type: string
+                  sessionId:
+                    type: string
+        "403":
+          description: Invalid email or password.
+  /logout:
+    post:
+      summary: Log out a user.
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: User logged out successfully.
+        "400":
+          description: Bad request.
+  /users:
+    get:
+      summary: Retrieve all users.
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: List of all users.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    fullName:
+                      type: string
+                    email:
+                      type: string
+  /user:
+    get:
+      summary: Retrieve a specific user by ID.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: userId
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: User details.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  fullName:
+                    type: string
+                  email:
+                    type: string
+                  photo:
+                    type: string
+        "404":
+          description: User not found.
+  /updateUser:
+    post:
+      summary: Update user details.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                fullName:
+                  type: string
+                email:
+                  type: string
+                photo:
+                  type: string
+                  format: binary
+      responses:
+        "200":
+          description: User updated successfully.
+  /cars:
+    get:
+      summary: Retrieve all cars.
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: List of all cars.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    photos:
+                      type: array
+                      items:
+                        type: string
+                    name:
+                      type: string
+                    rating:
+                      type: number
+                    reviewCount:
+                      type: integer
+                    rentalPricePerDay:
+                      type: number
+                    isPopular:
+                      type: boolean
+                    description:
+                      type: string
+                    engineType:
+                      type: string
+                    power:
+                      type: integer
+                    fuelType:
+                      type: string
+                    color:
+                      type: string
+                    driveType:
+                      type: string
+  /cars/popular:
+    get:
+      summary: Retrieve popular cars.
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: List of popular cars.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    photos:
+                      type: array
+                      items:
+                        type: string
+                    name:
+                      type: string
+                    rating:
+                      type: number
+                    reviewCount:
+                      type: integer
+                    rentalPricePerDay:
+                      type: number
+                    isPopular:
+                      type: boolean
+                    description:
+                      type: string
+                    engineType:
+                      type: string
+                    power:
+                      type: integer
+                    fuelType:
+                      type: string
+                    color:
+                      type: string
+                    driveType:
+                      type: string
+  /addCar:
+    post:
+      summary: Add a new car.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                rating:
+                  type: number
+                reviewCount:
+                  type: number
+                rentalPricePerDay:
+                  type: number
+                isPopular:
+                  type: boolean
+                description:
+                  type: string
+                engineType:
+                  type: string
+                power:
+                  type: integer
+                fuelType:
+                  type: string
+                color:
+                  type: string
+                driveType:
+                  type: string
+                photos:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+      responses:
+        "200":
+          description: Car added successfully.
+  /promotions:
+    get:
+      summary: Retrieve all promotions.
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: List of all promotions.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    name:
+                      type: string
+                    photo:
+                      type: string
+  /addPromotion:
+    post:
+      summary: Add a new promotion.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                photo:
+                  type: string
+                  format: binary
+      responses:
+        "200":
+          description: Promotion added successfully.
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
